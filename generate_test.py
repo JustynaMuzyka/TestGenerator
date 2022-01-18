@@ -11,6 +11,9 @@ from PySide6.QtWidgets import (
     QPushButton
     )
 from question_types_widget import QuestionTypesWidget
+from single_choice_question_widget import SingleChoiceQuestionWidget
+from multiple_choice_question_widget import MultipleChoiceQuestionWidget
+from open_question_widget import OpenQuestionWidget
 from database import database, Test
 
 class GenerateTestWidget(QWidget):
@@ -19,7 +22,9 @@ class GenerateTestWidget(QWidget):
         super().__init__()
 
         questionTypesWidget = QuestionTypesWidget()
-        
+        questionTypesWidget.onSingleChoiceQuestion.connect(self.on_single_choice_question)
+        questionTypesWidget.onMultipleChoiceQuestion.connect(self.on_multiple_choice_question)
+        questionTypesWidget.onOpenQuestion.connect(self.on_open_question)
 
         self.questionsStackedWidget = QStackedWidget()
         self.questionsStackedWidget.addWidget(questionTypesWidget)
@@ -100,6 +105,21 @@ class GenerateTestWidget(QWidget):
             widgetToDelete = self.questionsStackedWidget.currentWidget()
             if widgetToDelete.on_next(self.test):
                 self.questionsStackedWidget.removeWidget(widgetToDelete)
+       
+    def on_single_choice_question(self):
+        singleChoiceQuestionWidget = SingleChoiceQuestionWidget()
+        self.questionsStackedWidget.addWidget(singleChoiceQuestionWidget)
+        self.questionsStackedWidget.setCurrentIndex(1)
+
+    def on_multiple_choice_question(self):
+        multipleChoiceQuestionWidget = MultipleChoiceQuestionWidget()
+        self.questionsStackedWidget.addWidget(multipleChoiceQuestionWidget)
+        self.questionsStackedWidget.setCurrentIndex(1)
+
+    def on_open_question(self):
+        openQuestionWidget = OpenQuestionWidget()
+        self.questionsStackedWidget.addWidget(openQuestionWidget)
+        self.questionsStackedWidget.setCurrentIndex(1)
 
     onFinishSignal = Signal()
     def on_finish(self):
