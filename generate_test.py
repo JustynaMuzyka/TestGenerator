@@ -68,9 +68,11 @@ class GenerateTestWidget(QWidget):
         result = self.try_insert_test()
 
         while result < 0:
+            self.on_finish()
             result = self.try_insert_test()
 
         if result == 0:
+            self.on_finish()
             return False
 
         return True
@@ -121,6 +123,6 @@ class GenerateTestWidget(QWidget):
         self.questionsStackedWidget.addWidget(openQuestionWidget)
         self.questionsStackedWidget.setCurrentIndex(1)
 
-    onFinishSignal = Signal()
+    onFinishSignalGT = Signal()
     def on_finish(self):
-        self.onFinishSignal.emit()
+        self.onFinishSignalGT.emit()

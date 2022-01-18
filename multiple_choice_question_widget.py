@@ -101,4 +101,3 @@ class MultipleChoiceQuestionWidget(QWidget):
             return True
 
         return False
-

@@ -79,5 +79,44 @@ class TestsDatabase():
         self.cursor.execute(INSERT_ANSWER, (answer.answerText, answer.isCorrect, idQuestion))
         return self.cursor.lastrowid
 
-database = TestsDatabase()
+    def query_questions(self, test):
+        QUERY_QUESTIONS = """
+        SELECT id_question, question_text, question_type
+        FROM question q JOIN test t ON t.id_test = q.id_test 
+        WHERE t.test_name = (?);
+        """
+        QUERY_ANSWERS = """
+        SELECT answer_text, is_correct
+        FROM question q JOIN answer a ON a.id_question = q.id_question
+        WHERE q.id_question = (?);
+        """
 
+        questions = []
+        self.cursor.execute(QUERY_QUESTIONS, (test.testName,))
+        rows = self.cursor.fetchall()
+        for row in rows:
+            questionId = row[0]
+            questionText = row[1]
+            questionType = row[2]
+            questions.append(Question(questionId, questionText, questionType))
+
+        results = []
+        for question in questions:
+            result = {
+                    'question' : question,
+                    'answers' : []
+                    }
+            if question.questionType != "OPEN":
+                self.cursor.execute(QUERY_ANSWERS, (question.questionId,))
+                rows = self.cursor.fetchall()
+                for row in rows:
+                    answerText = row[0]
+                    isCorrect = row[1]
+                    result['answers'].append(Answer(answerText, isCorrect))
+
+            results.append(result)
+        
+        return results
+
+
+database = TestsDatabase()
