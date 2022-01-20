@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QCursor
+from PySide6.QtGui import QFont, QCursor, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QWidget,
     QLabel, 
@@ -21,38 +21,33 @@ class MainMenuWidget(QWidget):
 
         widgets = {
             'title' : QLabel(),
-            'generateTest' : QPushButton("Generate Test"),
-            'openTest' : QPushButton("Open Test")
+            'generateTest' : QPushButton(),
+            'openTest' : QPushButton()
             }
+        generateTestButtonIcon = QIcon()
+        openTestButtonIcon = QIcon()
 
-        font = QFont()
-        font.setPointSize(28)
-        font.setBold(True)
-        
-        widgets['title'].setText("Welcome to\n Test Generator!")
-        widgets['title'].setFont(font)
+        applicationLogoDesign = QPixmap("logo.png")
+        generateTestButtonDesign = QPixmap("generateTestButton.png")
+        openTestButtonDesign = QPixmap("openTestButton.png")
+
+        generateTestButtonIcon.addPixmap(generateTestButtonDesign)
+        openTestButtonIcon.addPixmap(openTestButtonDesign)
+
+        widgets['title'].setPixmap(applicationLogoDesign)
         widgets['title'].setAlignment(Qt.AlignCenter)
-        widgets['title'].setStyleSheet("margin: 15px 50px")
-        
+
         widgets['generateTest'].clicked.connect(self.on_generate_test)
-        widgets['generateTest'].setFixedWidth(250)
         widgets['generateTest'].setCursor(QCursor(Qt.PointingHandCursor))
-        widgets['generateTest'].setStyleSheet(
-            "*{border: 2px solid '#49aa2e';"+
-            "font-size: 25px;"+
-            "margin: 20px 10px}"+
-            "*:hover{background: '#49aa2e';}"
-            )
+        widgets['generateTest'].setStyleSheet("background: '#ffffff'")
+        widgets['generateTest'].setIcon(generateTestButtonIcon)
+        widgets['generateTest'].setIconSize(generateTestButtonDesign.rect().size())
         
         widgets['openTest'].clicked.connect(self.on_open_test)
-        widgets['openTest'].setFixedWidth(250)
         widgets['openTest'].setCursor(QCursor(Qt.PointingHandCursor))
-        widgets['openTest'].setStyleSheet(
-            "*{border: 2px solid '#49aa2e';"+
-            "font-size: 25px;"+
-            "margin: 20px 10px}"+
-            "*:hover{background: '#49aa2e';}"
-            )
+        widgets['openTest'].setStyleSheet("background: '#ffffff'")
+        widgets['openTest'].setIcon(openTestButtonIcon)
+        widgets['openTest'].setIconSize(openTestButtonDesign.rect().size())
         
         layout = QGridLayout()
         layout.addWidget(widgets['title'], 0, 1)

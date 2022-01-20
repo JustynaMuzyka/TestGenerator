@@ -43,28 +43,32 @@ class OpenTestMultipleChoiceQuestionWidget(QWidget):
         self.formLayout = QFormLayout()
         self.formLayout.addRow(self.widgets['question'])
         for button in self.widgets['answers'].buttons():
+            button.setStyleSheet("font-size: 16px")
             self.formLayout.addWidget(button)
 
         layout = QVBoxLayout()
         layout.addLayout(self.formLayout)
         self.setLayout(layout)
     
-    def on_next(self, file):
+    def on_next(self, file, isTimeout):
         checkedAnswersIds = []
         for i, button in enumerate(self.widgets['answers'].buttons()):
             if button.isChecked():
                 checkedAnswersIds.append(i)
         
-        if checkedAnswersIds:
+        if not isTimeout and checkedAnswersIds:
             file.write("Question: " + self.widgets['question'].text() + "\n")
-
             for checkedId in checkedAnswersIds:
                 button = self.widgets['answers'].button(checkedId)
                 if button.text() in self.correctAnswer:
-                    file.write("Answer - " + button.text() + "   CORRECT\n")
+                    file.write("Answer - " + button.text() + "   CORRECT\n\n")
                 else:
-                    file.write("Answer - " + button.text() + "   WRONG\n")
-            file.write("\n")
+                    file.write("Answer - " + button.text() + "   WRONG\n\n")
+            
+            return True
+        elif isTimeout and not checkedAnswersIds:
+            file.write("Question: " + self.widgets['question'].text() + "\n")
+            file.write("Answer - " + "LEFT EMPTY\n\n")
             return True
 
         return False

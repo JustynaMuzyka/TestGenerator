@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QIntValidator, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QRadioButton,
     QButtonGroup,
@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QFormLayout,
     QVBoxLayout,
+    QHBoxLayout,
     QPushButton
     )
 
@@ -23,22 +24,38 @@ class MultipleChoiceQuestionWidget(QWidget):
 
         self.widgets = {
             'question' : QLineEdit(),
+            'time' : QLineEdit(),
             'answers' : QButtonGroup(),
-            'addAnswer' : QPushButton("Add answer")
+            'addAnswer' : QPushButton()
             }
+        addAnswerButtonIcon = QIcon()
+        addAnswerButtonDesign = QPixmap("addAnswerButtonDesign.png")
+        addAnswerButtonIcon.addPixmap(addAnswerButtonDesign)
 
-        self.widgets['addAnswer'].setStyleSheet("font-size: 15px; background: '#40C742'")
-        self.widgets['addAnswer'].setCursor(QCursor(Qt.PointingHandCursor))
-        self.widgets['question'].setStyleSheet("font-size: 13px; background: '#ffffff'")
+        self.widgets['question'].setStyleSheet("font-size: 18px; background: '#ffffff'")
         self.widgets['question'].setPlaceholderText("Enter question")
         self.widgets['question'].editingFinished.connect(self.on_add_question)
+        
+        self.widgets['time'].setStyleSheet("font-size: 14px; background: '#ffffff'")
+        self.widgets['time'].setPlaceholderText("Enter time")
+        self.widgets['time'].setValidator(QIntValidator(1, 600))
+        self.widgets['time'].editingFinished.connect(self.on_add_time)
+        self.widgets['time'].setMaximumWidth(70)
+
+        self.widgets['addAnswer'].clicked.connect(self.on_add_answer)
+        self.widgets['addAnswer'].setCursor(QCursor(Qt.PointingHandCursor))
+        self.widgets['addAnswer'].setStyleSheet("background: '#ffffff'")
+        self.widgets['addAnswer'].setIcon(addAnswerButtonIcon)
+        self.widgets['addAnswer'].setIconSize(addAnswerButtonDesign.rect().size())
 
         self.widgets['answers'].setExclusive(False)
-        
-        self.widgets['addAnswer'].clicked.connect(self.on_add_answer)
+
+        questionWithTimeLayout = QHBoxLayout()
+        questionWithTimeLayout.addWidget(self.widgets['question'])
+        questionWithTimeLayout.addWidget(self.widgets['time'])
 
         self.formLayout = QFormLayout()
-        self.formLayout.addRow(self.widgets['question'])
+        self.formLayout.addRow(questionWithTimeLayout)
         self.formLayout.addRow(self.widgets['addAnswer'])
 
         layout = QVBoxLayout()
@@ -48,30 +65,42 @@ class MultipleChoiceQuestionWidget(QWidget):
     def on_add_question(self):
         self.question.questionText = self.widgets['question'].text()
 
+    def on_add_time(self):
+        self.question.questionTime = self.widgets['time'].text()
+
     def on_add_answer(self):
         self.answerLineEdit = QLineEdit()
         self.answerLineEdit.setPlaceholderText("Enter answer")
-        self.answerLineEdit.setStyleSheet("background: '#ffffff';")
+        self.answerLineEdit.setStyleSheet("font-size: 16px; background: '#ffffff';")
 
-        confirmAnswerButton = QPushButton("OK")
-        confirmAnswerButton.setCursor(QCursor(Qt.PointingHandCursor))
-        confirmAnswerButton.setStyleSheet("background: '#40C742'")
+        confirmAnswerButtonIcon = QIcon()
+        confirmAnswerButtonDesign = QPixmap("confirmAnswerButtonDesign.png")
+        confirmAnswerButtonIcon.addPixmap(confirmAnswerButtonDesign)
+
+        confirmAnswerButton = QPushButton()
         confirmAnswerButton.clicked.connect(self.confirm_answer)
         confirmAnswerButton.setCursor(QCursor(Qt.PointingHandCursor))
+        confirmAnswerButton.setStyleSheet("background: '#ffffff'")
+        confirmAnswerButton.setFixedSize(170,50)
+        confirmAnswerButton.setIcon(confirmAnswerButtonIcon)
+        confirmAnswerButton.setIconSize(confirmAnswerButtonDesign.rect().size())
+        
 
         formLayout = QFormLayout()
         formLayout.addRow(self.answerLineEdit)
         formLayout.addRow(confirmAnswerButton)
     
         self.createAnswerDialog = QDialog()
-        self.createAnswerDialog.setStyleSheet("background: #82FF84;")
+        self.createAnswerDialog.setStyleSheet("background: #6fce6f;")
         self.createAnswerDialog.setWindowTitle("Create answer")
+        self.createAnswerDialog.setFixedSize(600,100)
         self.createAnswerDialog.setWindowModality(Qt.ApplicationModal)
         self.createAnswerDialog.setLayout(formLayout)
         self.createAnswerDialog.exec()
 
         if self.createAnswerDialog.result() == QDialog.Accepted:
             buttonToAdd = QRadioButton(self.answerLineEdit.text())
+            buttonToAdd.setStyleSheet("font-size: 14px")
             idButton = len(self.widgets['answers'].buttons())
             
             self.formLayout.insertRow(self.formLayout.count() - 1, buttonToAdd)
@@ -88,7 +117,7 @@ class MultipleChoiceQuestionWidget(QWidget):
             if button.isChecked():
                 correctAnswersIds.append(i)
         
-        if self.question.questionText and self.answers and correctAnswersIds:
+        if self.question.questionText and self.answers and correctAnswersIds and self.question.questionTime:
             idTest = database.insert_test(test)
             idQuestion = database.insert_question(self.question, idTest)
             

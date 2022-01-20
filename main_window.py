@@ -43,6 +43,8 @@ class MainWindow(QMainWindow):
         
         if self.centralWidget().widget(1).create_test():
             self.centralWidget().setCurrentIndex(1)
+        else:
+            self.centralWidget().removeWidget(generateTestWidget)
 
     def open_test_slot(self):
         openTestWidget = OpenTestWidget()
@@ -51,3 +53,5 @@ class MainWindow(QMainWindow):
 
         if self.centralWidget().widget(1).choose_test():
             self.centralWidget().setCurrentIndex(1)
+        else:
+            self.centralWidget().removeWidget(openTestWidget)

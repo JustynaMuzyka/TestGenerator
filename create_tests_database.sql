@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS question (
 	id_question INTEGER PRIMARY KEY AUTOINCREMENT,
 	question_text TEXT NOT NULL,
 	question_type TEXT NOT NULL,
+	question_time INTEGER NOT NULL,
 	
 	id_test INTEGER,
 	FOREIGN KEY(id_test) REFERENCES test(id_test)

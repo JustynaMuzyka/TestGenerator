@@ -1,5 +1,6 @@
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QCursor
+from time import strftime, gmtime
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QFont, QCursor, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QMainWindow,
     QInputDialog,
@@ -22,42 +23,63 @@ class OpenTestWidget(QWidget):
 
     def __init__(self):
         super().__init__()
-        
+
         self.questionsStackedWidget = QStackedWidget()
+        
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.on_timeout)
+        
+        font = QFont()
+        font.setPointSize(18)
+        font.setBold(True)
+        self.timeRemainingLabel = QLabel()
+        self.timeRemainingLabel.setFont(font)
+
+        questionAndTimerLayout = QHBoxLayout()
+        questionAndTimerLayout.addWidget(self.questionsStackedWidget)
+        questionAndTimerLayout.addWidget(self.timeRemainingLabel)
+        questionAndTimerLayout.setAlignment(self.timeRemainingLabel, Qt.AlignTop)
+
         buttonsBottomLayout = self.prepare_buttons_bottom_layout()
+
         widgetLayout = QVBoxLayout()
-        widgetLayout.addWidget(self.questionsStackedWidget)
+        widgetLayout.addLayout(questionAndTimerLayout)
         widgetLayout.addLayout(buttonsBottomLayout)
         self.setLayout(widgetLayout)
 
     def prepare_buttons_bottom_layout(self):
         self.buttons = {
-            'next' : QPushButton("Next"),
-            'finish' : QPushButton("Finish")
+            'next' : QPushButton(),
+            'finish' : QPushButton()
             }
+        nextButtonIcon = QIcon()
+        finishButtonIcon = QIcon()
+
+        nextButtonDesign = QPixmap("nextButtonDesign.png")
+        finishButtonDesign = QPixmap("finishButtonDesign.png")
+
+        nextButtonIcon.addPixmap(nextButtonDesign)
+        finishButtonIcon.addPixmap(finishButtonDesign)
 
         self.buttons['next'].clicked.connect(self.on_next)
         self.buttons['next'].setCursor(QCursor(Qt.PointingHandCursor))
-        self.buttons['next'].setStyleSheet(
-            "*{border: 3px solid '#0E9110';"+
-            "font-size: 25px}"+
-            "*:hover{background: '#0E9110';}"
-            )
+        self.buttons['next'].setStyleSheet("background: '#ffffff'")
+        self.buttons['next'].setIcon(nextButtonIcon)
+        self.buttons['next'].setIconSize(nextButtonDesign.rect().size())
+        
 
         self.buttons['finish'].clicked.connect(self.on_finish)
         self.buttons['finish'].setCursor(QCursor(Qt.PointingHandCursor))
-        self.buttons['finish'].setStyleSheet(
-            "*{border: 3px solid '#0E9110';"+
-            "font-size: 25px}"+
-            "*:hover{background: '#0E9110';}"
-            )
+        self.buttons['finish'].setStyleSheet("background: '#ffffff'")
+        self.buttons['finish'].setIcon(finishButtonIcon)
+        self.buttons['finish'].setIconSize(finishButtonDesign.rect().size())
+
 
         layout = QHBoxLayout()
         layout.setAlignment(Qt.AlignBottom)
         layout.addWidget(self.buttons['next'])
         layout.addWidget(self.buttons['finish'])
         return layout       
-
 
     def choose_test(self):
         result = self.try_choose_test()
@@ -83,6 +105,7 @@ class OpenTestWidget(QWidget):
                 self.currentQuestion = 0
                 self.check_question_type()
                 return 1
+
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setStyleSheet("background: #6fce6f;")
@@ -96,6 +119,9 @@ class OpenTestWidget(QWidget):
     def check_question_type(self):
         if self.currentQuestion < len(self.results):
             question = self.results[self.currentQuestion]['question']
+            self.isTimeout = False
+            self.remainingTime = question.questionTime
+            self.timer.start(question.questionTime)
 
             if question.questionType == 'SINGLE':
                 self.current_single_choice_question()
@@ -109,10 +135,19 @@ class OpenTestWidget(QWidget):
         else:
             self.on_finish()
 
+    def on_timeout(self):
+        self.remainingTime -= self.timer.remainingTime() / 1000.0
+        timeString = strftime('%M:%S', gmtime(self.remainingTime))
+        self.timeRemainingLabel.setText(timeString)
+
+        if timeString == '00:00':
+            self.isTimeout = True
+            self.on_next()
+
     def on_next(self):
         if self.questionsStackedWidget.count() == 1:
             widgetToDelete = self.questionsStackedWidget.currentWidget()
-            if widgetToDelete.on_next(self.file):
+            if widgetToDelete.on_next(self.file, self.isTimeout):
                 self.questionsStackedWidget.removeWidget(widgetToDelete)
                 self.check_question_type()
                 

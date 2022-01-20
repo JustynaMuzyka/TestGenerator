@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QCursor
+from PySide6.QtGui import QCursor, QPixmap, QIcon
 from PySide6.QtWidgets import (
     QInputDialog,
     QLineEdit,
@@ -28,7 +28,7 @@ class GenerateTestWidget(QWidget):
 
         self.questionsStackedWidget = QStackedWidget()
         self.questionsStackedWidget.addWidget(questionTypesWidget)
-        
+
         buttonsBottomLayout = self.prepare_buttons_bottom_layout()
 
         widgetLayout = QVBoxLayout()
@@ -37,26 +37,32 @@ class GenerateTestWidget(QWidget):
         self.setLayout(widgetLayout)
 
     def prepare_buttons_bottom_layout(self):
+
         self.buttons = {
-            'confirm' : QPushButton("Confirm"),
-            'finish' : QPushButton("Finish")
+            'confirm' : QPushButton(),
+            'finish' : QPushButton()
             }
+        confirmButtonIcon = QIcon()
+        finishButtonIcon = QIcon()
+
+        confirmButtonDesign = QPixmap("confirmButtonDesign.png")
+        finishButtonDesign = QPixmap("finishButtonDesign.png")
+
+        confirmButtonIcon.addPixmap(confirmButtonDesign)
+        finishButtonIcon.addPixmap(finishButtonDesign)
 
         self.buttons['confirm'].clicked.connect(self.on_next)
         self.buttons['confirm'].setCursor(QCursor(Qt.PointingHandCursor))
-        self.buttons['confirm'].setStyleSheet(
-            "*{border: 3px solid '#0E9110';"+
-            "font-size: 25px}"+
-            "*:hover{background: '#0E9110';}"
-            )
+        self.buttons['confirm'].setStyleSheet("background: '#ffffff'")
+        self.buttons['confirm'].setIcon(confirmButtonIcon)
+        self.buttons['confirm'].setIconSize(confirmButtonDesign.rect().size())
+        
 
         self.buttons['finish'].clicked.connect(self.on_finish)
         self.buttons['finish'].setCursor(QCursor(Qt.PointingHandCursor))
-        self.buttons['finish'].setStyleSheet(
-            "*{border: 3px solid '#0E9110';"+
-            "font-size: 25px}"+
-            "*:hover{background: '#0E9110';}"
-            )
+        self.buttons['finish'].setStyleSheet("background: '#ffffff'")
+        self.buttons['finish'].setIcon(finishButtonIcon)
+        self.buttons['finish'].setIconSize(finishButtonDesign.rect().size())
 
         layout = QHBoxLayout()
         layout.setAlignment(Qt.AlignBottom)

@@ -5,10 +5,11 @@ class Test():
         self.testName = testName
 
 class Question():
-    def __init__(self, questionId=None, questionText=None, questionType=None):
+    def __init__(self, questionId=None, questionText=None, questionType=None, questionTime=None):
         self.questionId = questionId
         self.questionText = questionText
         self.questionType = questionType
+        self.questionTime = questionTime
 
 class Answer():
     def __init__(self, answerText, isCorrect=False):
@@ -65,10 +66,10 @@ class TestsDatabase():
 
     def insert_question(self, question, idTest):
         INSERT_QUESTION = """
-        INSERT INTO question (question_text, question_type, id_test) VALUES (?, ?, ?);
+        INSERT INTO question (question_text, question_type, question_time, id_test) VALUES (?, ?, ?, ?);
         """
 
-        self.cursor.execute(INSERT_QUESTION, (question.questionText, question.questionType, idTest))
+        self.cursor.execute(INSERT_QUESTION, (question.questionText, question.questionType, question.questionTime, idTest))
         return self.cursor.lastrowid
 
     def insert_answer(self, answer, idQuestion):
@@ -81,7 +82,7 @@ class TestsDatabase():
 
     def query_questions(self, test):
         QUERY_QUESTIONS = """
-        SELECT id_question, question_text, question_type
+        SELECT id_question, question_text, question_type, question_time
         FROM question q JOIN test t ON t.id_test = q.id_test 
         WHERE t.test_name = (?);
         """
@@ -98,7 +99,8 @@ class TestsDatabase():
             questionId = row[0]
             questionText = row[1]
             questionType = row[2]
-            questions.append(Question(questionId, questionText, questionType))
+            questionTime = row[3]
+            questions.append(Question(questionId, questionText, questionType, questionTime))
 
         results = []
         for question in questions:

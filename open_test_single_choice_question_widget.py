@@ -41,22 +41,28 @@ class OpenTestSingleChoiceQuestionWidget(QWidget):
         self.formLayout = QFormLayout()
         self.formLayout.addRow(self.widgets['question'])
         for button in self.widgets['answers'].buttons():
+            button.setStyleSheet("font-size: 16px")
             self.formLayout.addWidget(button)
 
         layout = QVBoxLayout()
         layout.addLayout(self.formLayout)
         self.setLayout(layout)
 
-    def on_next(self, file):
+    def on_next(self, file, isTimeout):
         self.idCheckedAnswer = self.widgets['answers'].checkedId()
 
-        if self.idCheckedAnswer < -1:
-            button = self.widgets['answers'].button(self.idCheckedAnswer)
+        if not isTimeout and self.idCheckedAnswer < -1:
             file.write("Question: " + self.widgets['question'].text() + "\n")
+            button = self.widgets['answers'].button(self.idCheckedAnswer)
             if button.text() == self.correctAnswer:
                 file.write("Answer - " + button.text() + "   CORRECT\n\n")
             else:
                 file.write("Answer - " + button.text() + "   WRONG\n\n")
+            
+            return True
+        elif isTimeout and self.idCheckedAnswer == -1:
+            file.write("Question: " + self.widgets['question'].text() + "\n")
+            file.write("Answer - " + "LEFT EMPTY\n\n")
             return True
 
         return False

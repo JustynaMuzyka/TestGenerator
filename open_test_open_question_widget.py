@@ -50,10 +50,14 @@ class OpenTestOpenQuestionWidget(QWidget):
     def on_add_answer(self):
         self.answer = self.widgets['answer'].toPlainText()
 
-    def on_next(self, file):
-        if self.answer != "":
+    def on_next(self, file, isTimeout):
+        if not isTimeout and self.answer:
             file.write("Question: " + self.widgets['question'].text() + "\n")
             file.write("Answer - " + self.answer + "\n\n")
+            return True
+        elif isTimeout and not self.answer:
+            file.write("Question: " + self.widgets['question'].text() + "\n")
+            file.write("Answer - " + "LEFT EMPTY\n\n")
             return True
 
         return False
